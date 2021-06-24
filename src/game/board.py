@@ -78,12 +78,14 @@ class GameBoard(ABC):
 
 class Connect4Board(GameBoard):
 
-    def __init__(self):
-        """ 
-        """
-        GameBoard.__init__(self, 6, 7, 4)
+    def update_state(self, player: str, col: int):
+        assert player in self.players, player
+        j = col
+        for i in range(self.num_rows-1, -1, -1):
+            if i > self.num_rows or j > self.num_cols or i < 0 or j < 0 :
+                print("\n This position is not on the board ")
+                return False
 
-    def update_state(self):
-        pass
-        # TODO : 
-        # check the column and 
+            if self.state[i,j] == self.blank:
+                self.state[i,j] = player
+                return True

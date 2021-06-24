@@ -17,7 +17,7 @@ def _sequences_of_k_from_coordinate(coord: Tuple[int, int], k: int): #TODO : ret
 
 class MnkGameAi:
 
-    def __init__(self, player, max_search_depth=1):
+    def __init__(self, player, max_search_depth=5):
         self.player = player
         self.max_search_depth = max_search_depth 
         if player == "O":
@@ -114,8 +114,38 @@ class MnkGameAi:
 
 class Connect4GameAi(MnkGameAi):
 
-    def valid_actions(self, state):
-        pass
+    def valid_actions(self, state: np.ndarray):
+        blanks_row, blanks_col = np.where(state == ".")
+        return np.unique(blanks_col)#[coord for coord, space in np.ndenumerate(state) if space == "."] # assuming this is the blank space
 
     def action_result(self, board, action):
-        pass 
+        new_board = deepcopy(board)
+        new_board.update_state(self.player, action)
+        return new_board
+
+    def evaluate_state(self, state, k):
+        X_coords = [tuple(el) for el in np.stack(np.where(state == "X")).T.tolist()]
+        O_coords = [tuple(el) for el in np.stack(np.where(state == "O")).T.tolist()]
+        blank_coords = [tuple(el) for el in np.stack(np.where(state == ".")).T.tolist()]
+
+        X_and_blanks = X_coords + blank_coords
+        Xset = set(X_coords)
+        Xbset = set(X_and_blanks)
+        X_score = 0
+        for i in X_and_blanks:
+            for seq in _sequences_of_k_from_coordinate(i, k):
+                if seq <= Xbset:
+                    ratio = len(seq & Xset)/k
+                    X_score = max(X_score, ratio)
+
+        O_and_blanks = O_coords + blank_coords
+        Oset = set(O_coords)
+        Obset = set(O_and_blanks)
+        O_score = 0
+        for i in O_and_blanks:
+            for seq in _sequences_of_k_from_coordinate(i, k):
+                if seq <= Obset:
+                    ratio = len(seq & Oset)/k
+                    O_score = max(O_score, ratio)
+
+        return X_score - O_score   
