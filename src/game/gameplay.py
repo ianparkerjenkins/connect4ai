@@ -26,7 +26,7 @@ class Game(ABC):
         print(f" Player {current_player}'s turn ")
 
         if current_player in self.ai_players:
-            x, y = self.ai.move_search(self.board)
+            x, y = self.ai.move_search(current_player, self.board)
         else:
             x = input(" Input the (x) coordinate you want to play at : ")
             y = input(" Input the (y) coordinate you want to play at : ")
@@ -71,7 +71,7 @@ class Connect4(Game):
         print(f" Player {current_player}'s turn ")
 
         if current_player in self.ai_players:
-            y = self.ai.move_search(self.board)
+            y = self.ai.move_search(current_player, self.board)
         else:
             y = input(" Input the column you want to play in : ")
         

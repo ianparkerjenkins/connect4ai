@@ -17,21 +17,16 @@ def _sequences_of_k_from_coordinate(coord: Tuple[int, int], k: int): #TODO : ret
 
 class MnkGameAi:
 
-    def __init__(self, player, max_search_depth=5):
+    def __init__(self, player, max_search_depth=7):
         self.player = player
         self.max_search_depth = max_search_depth 
-        if player == "O":
-            min_player = True 
-        else:
-            min_player = False
-        self.min_player = min_player
 
     def valid_actions(self, state: np.ndarray):
         return [coord for coord, space in np.ndenumerate(state) if space == "."] # assuming this is the blank space
 
-    def action_result(self, board, action):
+    def action_result(self, board, player, action):
         new_board = deepcopy(board)
-        new_board.update_state(self.player, action[0], action[1])
+        new_board.update_state(player, action[0], action[1])
         return new_board
         
     def evaluate_state(self, state, k):
@@ -49,9 +44,9 @@ class MnkGameAi:
                     X_score = max(X_score, ratio)
         return X_score            
 
-    def move_search(self, board):
+    def move_search(self, player, board):
         board_ = deepcopy(board)
-        if self.min_player:
+        if player == "O":
             value, move = self._min_value(board_, -float("inf"), float("inf"), 0)
         else:
             value, move = self._max_value(board_, -float("inf"), float("inf"), 0)
@@ -74,7 +69,7 @@ class MnkGameAi:
         
         actions = self.valid_actions(board.state)
         for act in actions:
-            val_, act_ = self._min_value(self.action_result(board, act), alpha, beta, depth)
+            val_, act_ = self._min_value(self.action_result(board, "X", act), alpha, beta, depth)
             if val_ > val :
                 val, move = val_, act
                 alpha = max( alpha , val )
@@ -100,7 +95,7 @@ class MnkGameAi:
 
         actions = self.valid_actions(board.state)
         for act in actions:
-            val_, act_ = self._max_value(self.action_result(board, act), alpha, beta, depth)
+            val_, act_ = self._max_value(self.action_result(board, "O", act), alpha, beta, depth)
             if val_ < val :
                 val, move = val_, act
                 beta = min( beta , val )
@@ -118,9 +113,9 @@ class Connect4GameAi(MnkGameAi):
         blanks_row, blanks_col = np.where(state == ".")
         return np.unique(blanks_col)#[coord for coord, space in np.ndenumerate(state) if space == "."] # assuming this is the blank space
 
-    def action_result(self, board, action):
+    def action_result(self, board, player, action):
         new_board = deepcopy(board)
-        new_board.update_state(self.player, action)
+        new_board.update_state(player, action)
         return new_board
 
     def evaluate_state(self, state, k):
@@ -138,6 +133,7 @@ class Connect4GameAi(MnkGameAi):
                     ratio = len(seq & Xset)/k
                     X_score = max(X_score, ratio)
 
+        '''
         O_and_blanks = O_coords + blank_coords
         Oset = set(O_coords)
         Obset = set(O_and_blanks)
@@ -147,5 +143,5 @@ class Connect4GameAi(MnkGameAi):
                 if seq <= Obset:
                     ratio = len(seq & Oset)/k
                     O_score = max(O_score, ratio)
-
-        return X_score - O_score   
+        '''
+        return X_score# - O_score   
